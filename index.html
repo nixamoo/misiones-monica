@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Misiones Mónica">
+<meta name="theme-color" content="#fdf6ec">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>El Libro de Misiones</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:transparent;}
+.page{background:#fdf6ec;color:#3a2e1e;font-family:'Lato',sans-serif;padding:1.5rem 1.2rem 2.5rem;min-height:100vh;min-height:100dvh;position:relative;padding-bottom:calc(2.5rem + env(safe-area-inset-bottom));padding-left:calc(1.2rem + env(safe-area-inset-left));padding-right:calc(1.2rem + env(safe-area-inset-right));}
+.page::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 15% 5%,rgba(160,120,60,.07) 0%,transparent 45%),radial-gradient(ellipse at 85% 95%,rgba(80,100,50,.06) 0%,transparent 45%);}
+.mode-toggle{display:flex;align-items:center;gap:0;background:rgba(150,120,60,.1);border:0.5px solid rgba(150,120,60,.25);border-radius:20px;padding:3px;margin-bottom:1.4rem;width:fit-content;margin-left:auto;margin-right:auto;}
+.mode-btn{font-family:'Lato',sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 18px;border-radius:16px;border:none;cursor:pointer;transition:all .2s;background:transparent;color:rgba(90,70,40,.5);-webkit-tap-highlight-color:transparent;}
+.mode-btn.active{background:#fdf6ec;color:#5a4020;box-shadow:0 1px 4px rgba(150,120,60,.15);}
+.header{text-align:center;margin-bottom:1.4rem;}
+.header-title{font-family:'Playfair Display',Georgia,serif;font-size:22px;font-style:italic;font-weight:400;color:#3a2e1e;letter-spacing:1px;margin-bottom:2px;}
+.header-sub{font-size:10px;color:rgba(90,70,40,.45);letter-spacing:3px;text-transform:uppercase;font-family:'Lato',sans-serif;font-weight:300;}
+.header-rule{border:none;border-top:0.5px solid rgba(90,70,40,.2);margin:8px 0;}
+.xp-wrap{background:#fff8ee;border:0.5px solid rgba(150,120,60,.25);border-radius:8px;padding:10px 14px;margin-bottom:1.4rem;}
+.xp-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+.xp-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(90,70,40,.45);}
+.xp-count{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:18px;color:#8a6a2e;}
+.xp-track{height:6px;background:rgba(150,120,60,.12);border-radius:3px;overflow:hidden;}
+.xp-fill{height:100%;border-radius:3px;transition:width .4s ease;width:0%;}
+.xp-fill.weekday{background:linear-gradient(to right,#a8c068,#c9a84c);}
+.xp-fill.sunday{background:linear-gradient(to right,#9ab8d0,#c084c8);}
+.chapter{background:#fff8ee;border:0.5px solid rgba(150,120,60,.22);border-radius:10px;margin-bottom:.9rem;overflow:hidden;transition:box-shadow .2s;}
+.chapter:hover{box-shadow:0 2px 12px rgba(150,120,60,.1);}
+.ch-header{display:flex;align-items:center;gap:10px;padding:11px 14px 9px;cursor:pointer;user-select:none;border-bottom:0.5px solid transparent;transition:border-color .2s;-webkit-tap-highlight-color:transparent;}
+.ch-header.open{border-color:rgba(150,120,60,.15);}
+.ch-icon{font-size:18px;flex-shrink:0;}
+.ch-info{flex:1;min-width:0;}
+.ch-name{font-family:'Playfair Display',Georgia,serif;font-size:14px;font-style:italic;color:#5a4020;margin-bottom:1px;}
+.ch-time{font-size:11px;color:rgba(90,70,40,.4);letter-spacing:.5px;}
+.ch-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.ch-xp-badge{font-size:10px;font-weight:400;letter-spacing:1px;background:rgba(150,200,80,.12);color:#5a8020;border:0.5px solid rgba(120,180,60,.3);border-radius:10px;padding:2px 8px;white-space:nowrap;}
+.ch-xp-badge.earned{background:rgba(120,180,60,.2);color:#3a6010;border-color:rgba(90,150,40,.4);}
+.ch-xp-badge.sunday-badge{background:rgba(160,130,210,.12);color:#6a40a0;border-color:rgba(160,130,210,.3);}
+.ch-xp-badge.sunday-badge.earned{background:rgba(160,130,210,.25);color:#4a2080;}
+.ch-chev{font-size:10px;color:rgba(90,70,40,.3);transition:transform .2s;}
+.ch-chev.open{transform:rotate(180deg);}
+.tasks{display:none;padding:8px 14px 12px;}
+.tasks.open{display:block;}
+.task{display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:0.5px solid rgba(150,120,60,.08);cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.task:last-child{border-bottom:none;}
+.task-gem{width:14px;height:14px;border:1.5px solid rgba(150,120,60,.35);border-radius:3px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.task.done .task-gem{background:rgba(140,190,70,.25);border-color:rgba(100,160,40,.6);}
+.task.done .task-gem::after{content:'✓';font-size:9px;color:#5a9020;}
+.task-body{flex:1;min-width:0;}
+.task-text{font-size:13.5px;color:#4a3a20;line-height:1.4;transition:color .15s;}
+.task.done .task-text{color:rgba(90,70,40,.35);text-decoration:line-through;text-decoration-color:rgba(140,190,70,.4);}
+.task-xp{font-size:10px;color:rgba(90,130,30,.6);margin-top:1px;}
+.task.done .task-xp{color:rgba(90,130,30,.35);}
+.sunday-gem .task-gem{border-color:rgba(160,130,210,.4);}
+.sunday-gem.done .task-gem{background:rgba(160,130,210,.2);border-color:rgba(130,90,190,.55);}
+.sunday-gem.done .task-gem::after{color:#7a40c0;}
+.sunday-gem .task-xp{color:rgba(120,80,180,.55);}
+.sunday-gem.done .task-xp{color:rgba(120,80,180,.3);}
+.chapter.morning .ch-name{color:#7a4a18;}
+.chapter.morning{border-color:rgba(200,140,60,.3);}
+.chapter.morning .ch-header.open{border-color:rgba(200,140,60,.2);}
+.chapter.study .ch-name{color:#2e5020;}
+.chapter.study{border-color:rgba(100,160,60,.25);}
+.chapter.study .ch-header.open{border-color:rgba(100,160,60,.18);}
+.chapter.free .ch-name{color:#3a4a6a;}
+.chapter.free{border-color:rgba(80,100,160,.22);}
+.chapter.free .ch-header.open{border-color:rgba(80,100,160,.16);}
+.chapter.sun-morning .ch-name{color:#5a3080;}
+.chapter.sun-morning{border-color:rgba(160,120,210,.28);}
+.chapter.sun-morning .ch-header.open{border-color:rgba(160,120,210,.2);}
+.chapter.sun-care .ch-name{color:#2a6060;}
+.chapter.sun-care{border-color:rgba(80,160,150,.25);}
+.chapter.sun-care .ch-header.open{border-color:rgba(80,160,150,.18);}
+.chapter.sun-study .ch-name{color:#2e5020;}
+.chapter.sun-study{border-color:rgba(100,160,60,.25);}
+.ch-note{font-size:12px;font-style:italic;color:rgba(90,70,40,.4);padding:2px 0 4px 24px;line-height:1.5;}
+.footer{text-align:center;margin-top:1.8rem;}
+.reset-btn{background:transparent;border:0.5px solid rgba(90,70,40,.2);color:rgba(90,70,40,.4);font-family:'Lato',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:8px 20px;border-radius:20px;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.reset-btn:hover{color:rgba(90,70,40,.65);border-color:rgba(90,70,40,.35);}
+.footer-quote{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:12px;color:rgba(90,70,40,.3);margin-top:14px;line-height:1.6;}
+.mode-section.hidden{display:none;}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="mode-toggle">
+  <button class="mode-btn active" id="btn-weekday" onclick="setMode('weekday')">Lunes – Sábado</button>
+  <button class="mode-btn" id="btn-sunday" onclick="setMode('sunday')">Domingo ✦</button>
+</div>
+<div class="header">
+  <hr class="header-rule">
+  <div class="header-title" id="main-title">El Libro de Misiones</div>
+  <div class="header-sub" id="main-sub">Crónica Diaria · Mónica</div>
+  <hr class="header-rule">
+</div>
+<div class="xp-wrap">
+  <div class="xp-top">
+    <span class="xp-label">✦ XP del Día</span>
+    <span class="xp-count" id="xp-display">0 / 210 xp</span>
+  </div>
+  <div class="xp-track"><div class="xp-fill weekday" id="xp-fill"></div></div>
+</div>
+
+<!-- WEEKDAY -->
+<div id="section-weekday" class="mode-section">
+  <div class="chapter morning" id="c0">
+    <div class="ch-header open" onclick="toggle('c0')"><span class="ch-icon">🕯️</span><div class="ch-info"><div class="ch-name">Cap. I — Misión Aurora</div><div class="ch-time">5:30 am · El amanecer</div></div><div class="ch-right"><span class="ch-xp-badge" id="badge-c0">0 / 45 xp</span><span class="ch-chev open" id="chev-c0">▾</span></div></div>
+    <div class="tasks open" id="tasks-c0">
+      <div class="task" data-id="c0-0" data-xp="10" data-ch="c0" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Levantarse antes que el mundo</div><div class="task-xp">+10 xp</div></div></div>
+      <div class="task" data-id="c0-1" data-xp="15" data-ch="c0" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Pronunciar las palabras del día</div><div class="task-xp">+15 xp · afirmaciones · vision board</div></div></div>
+      <div class="task" data-id="c0-2" data-xp="10" data-ch="c0" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">El desayuno del héroe</div><div class="task-xp">+10 xp · comer · tomar agua</div></div></div>
+      <div class="task" data-id="c0-3" data-xp="10" data-ch="c0" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Preparar las provisiones</div><div class="task-xp">+10 xp · comida y agua para la academia</div></div></div>
+    </div>
+  </div>
+  <div class="chapter morning" id="c1">
+    <div class="ch-header" onclick="toggle('c1')"><span class="ch-icon">🌿</span><div class="ch-info"><div class="ch-name">Cap. II — El Gran Ritual</div><div class="ch-time">antes de las 7:10 am</div></div><div class="ch-right"><span class="ch-xp-badge" id="badge-c1">0 / 40 xp</span><span class="ch-chev" id="chev-c1">▾</span></div></div>
+    <div class="tasks" id="tasks-c1">
+      <div class="task" data-id="c1-0" data-xp="10" data-ch="c1" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Llenar los bidones sagrados</div><div class="task-xp">+10 xp · agua hervida + agua de academia</div></div></div>
+      <div class="task" data-id="c1-1" data-xp="10" data-ch="c1" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">El aseo del aventurero</div><div class="task-xp">+10 xp · dientes · cara</div></div></div>
+      <div class="task" data-id="c1-2" data-xp="10" data-ch="c1" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Ponerse la armadura</div><div class="task-xp">+10 xp · cambiarse</div></div></div>
+      <div class="task" data-id="c1-3" data-xp="10" data-ch="c1" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Alimentar al compañero Onyx</div><div class="task-xp">+10 xp · comida y agua · paseo</div></div></div>
+    </div>
+  </div>
+  <div class="chapter morning" id="c2">
+    <div class="ch-header" onclick="toggle('c2')"><span class="ch-icon">🗺️</span><div class="ch-info"><div class="ch-name">Cap. III — Partida</div><div class="ch-time">máx 7:10 am</div></div><div class="ch-right"><span class="ch-xp-badge" id="badge-c2">0 / 15 xp</span><span class="ch-chev" id="chev-c2">▾</span></div></div>
+    <div class="tasks" id="tasks-c2">
+      <div class="task" data-id="c2-0" data-xp="5" data-ch="c2" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Últimos preparativos y arreglarse</div><div class="task-xp">+5 xp</div></div></div>
+      <div class="task" data-id="c2-1" data-xp="10" data-ch="c2" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Cruzar la puerta — el mundo espera</div><div class="task-xp">+10 xp · salir a tiempo</div></div></div>
+    </div>
+  </div>
+  <div class="chapter study" id="c3">
+    <div class="ch-header" onclick="toggle('c3')"><span class="ch-icon">📚</span><div class="ch-info"><div class="ch-name">Cap. IV — La Gran Academia</div><div class="ch-time">8:00 am – 1:00 / 2:00 pm</div></div><div class="ch-right"><span class="ch-xp-badge" id="badge-c3">0 / 30 xp</span><span class="ch-chev" id="chev-c3">▾</span></div></div>
+    <div class="tasks" id="tasks-c3">
+      <div class="task" data-id="c3-0" data-xp="20" data-ch="c3" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Sobrevivir y aprender</div><div class="task-xp">+20 xp · clases · apuntes · agua</div></div></div>
+      <div class="task" data-id="c3-1" data-xp="10" data-ch="c3" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Regresar al hogar</div><div class="task-xp">+10 xp · llegar bien</div></div></div>
+      <p class="ch-note">✦ Llegar tarde o temprano está bien — lo importante es volver.</p>
+    </div>
+  </div>
+  <div class="chapter study" id="c4">
+    <div class="ch-header" onclick="toggle('c4')"><span class="ch-icon">🔮</span><div class="ch-info"><div class="ch-name">Cap. V — El Estudio</div><div class="ch-time">3:30 – 8:30 / 9:30 pm</div></div><div class="ch-right"><span class="ch-xp-badge" id="badge-c4">0 / 50 xp</span><span class="ch-chev" id="chev-c4">▾</span></div></div>
+    <div class="tasks" id="tasks-c4">
+      <div class="task" data-id="c4-0" data-xp="5" data-ch="c4" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Recuperar fuerzas</div><div class="task-xp">+5 xp · descanso breve al llegar</div></div></div>
+      <div class="task" data-id="c4-1" data-xp="15" data-ch="c4" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Primera ronda de hechizos</div><div class="task-xp">+15 xp · sesión I</div></div></div>
+      <div class="task" data-id="c4-2" data-xp="15" data-ch="c4" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Segunda ronda — no rendirse</div><div class="task-xp">+15 xp · sesión II</div></div></div>
+      <div class="task" data-id="c4-3" data-xp="15" data-ch="c4" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">El golpe final del día</div><div class="task-xp">+15 xp · sesión III</div></div></div>
+    </div>
+  </div>
+  <div class="chapter free" id="c5">
+    <div class="ch-header" onclick="toggle('c5')"><span class="ch-icon">🌙</span><div class="ch-info"><div class="ch-name">Cap. VI — El Descanso Ganado</div><div class="ch-time">8:30 – 10:00 pm</div></div><div class="ch-right"><span class="ch-xp-badge" id="badge-c5">0 / 30 xp</span><span class="ch-chev" id="chev-c5">▾</span></div></div>
+    <div class="tasks" id="tasks-c5">
+      <div class="task" data-id="c5-0" data-xp="15" data-ch="c5" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Tiempo sagrado — lo que quieras</div><div class="task-xp">+15 xp · peli · leer · cantar · journaling</div></div></div>
+      <div class="task" data-id="c5-1" data-xp="15" data-ch="c5" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Cerrar el libro del día</div><div class="task-xp">+15 xp · dormir a las 10:00 pm</div></div></div>
+      <p class="ch-note">✦ Este tiempo es tuyo. Lo mereciste.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SUNDAY -->
+<div id="section-sunday" class="mode-section hidden">
+  <div class="chapter sun-morning" id="s0">
+    <div class="ch-header open" onclick="toggle('s0')"><span class="ch-icon">🌸</span><div class="ch-info"><div class="ch-name">Cap. I — El Despertar Suave</div><div class="ch-time">8:30 am · sin prisa</div></div><div class="ch-right"><span class="ch-xp-badge sunday-badge" id="badge-s0">0 / 35 xp</span><span class="ch-chev open" id="chev-s0">▾</span></div></div>
+    <div class="tasks open" id="tasks-s0">
+      <div class="task sunday-gem" data-id="s0-0" data-xp="10" data-ch="s0" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Levantarse sin alarma que duela</div><div class="task-xp">+10 xp</div></div></div>
+      <div class="task sunday-gem" data-id="s0-1" data-xp="10" data-ch="s0" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">El paseo express de Onyx</div><div class="task-xp">+10 xp · necesidades matutinas</div></div></div>
+      <div class="task sunday-gem" data-id="s0-2" data-xp="15" data-ch="s0" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Preparar el desayuno con calma</div><div class="task-xp">+15 xp · cocinar · disfrutar</div></div></div>
+    </div>
+  </div>
+  <div class="chapter sun-care" id="s1">
+    <div class="ch-header" onclick="toggle('s1')"><span class="ch-icon">🛁</span><div class="ch-info"><div class="ch-name">Cap. II — El Gran Cuidado</div><div class="ch-time">mañana · sin límite exacto</div></div><div class="ch-right"><span class="ch-xp-badge sunday-badge" id="badge-s1">0 / 60 xp</span><span class="ch-chev" id="chev-s1">▾</span></div></div>
+    <div class="tasks" id="tasks-s1">
+      <div class="task sunday-gem" data-id="s1-0" data-xp="15" data-ch="s1" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">El baño de la heroína</div><div class="task-xp">+15 xp</div></div></div>
+      <div class="task sunday-gem" data-id="s1-1" data-xp="10" data-ch="s1" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">El ritual del cabello</div><div class="task-xp">+10 xp · lavarse el pelo</div></div></div>
+      <div class="task sunday-gem" data-id="s1-2" data-xp="20" data-ch="s1" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">La gran colada</div><div class="task-xp">+20 xp · lavar ropa</div></div></div>
+      <div class="task sunday-gem" data-id="s1-3" data-xp="15" data-ch="s1" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Curar las orejas del compañero</div><div class="task-xp">+15 xp · orejas de Onyx</div></div></div>
+    </div>
+  </div>
+  <div class="chapter sun-morning" id="s2">
+    <div class="ch-header" onclick="toggle('s2')"><span class="ch-icon">🐾</span><div class="ch-info"><div class="ch-name">Cap. III — El Gran Paseo</div><div class="ch-time">cuando quieras</div></div><div class="ch-right"><span class="ch-xp-badge sunday-badge" id="badge-s2">0 / 25 xp</span><span class="ch-chev" id="chev-s2">▾</span></div></div>
+    <div class="tasks" id="tasks-s2">
+      <div class="task sunday-gem" data-id="s2-0" data-xp="25" data-ch="s2" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Paseo largo con Onyx — el de verdad</div><div class="task-xp">+25 xp · explorar · disfrutar</div></div></div>
+      <p class="ch-note">✦ Este capítulo es también tuyo.</p>
+    </div>
+  </div>
+  <div class="chapter sun-care" id="s3">
+    <div class="ch-header" onclick="toggle('s3')"><span class="ch-icon">🍲</span><div class="ch-info"><div class="ch-name">Cap. IV — El Festín del Mediodía</div><div class="ch-time">mediodía · con pausa</div></div><div class="ch-right"><span class="ch-xp-badge sunday-badge" id="badge-s3">0 / 30 xp</span><span class="ch-chev" id="chev-s3">▾</span></div></div>
+    <div class="tasks" id="tasks-s3">
+      <div class="task sunday-gem" data-id="s3-0" data-xp="20" data-ch="s3" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Cocinar el almuerzo</div><div class="task-xp">+20 xp · tú lo haces, tú lo mereces</div></div></div>
+      <div class="task sunday-gem" data-id="s3-1" data-xp="10" data-ch="s3" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Sentarse y comer sin prisa</div><div class="task-xp">+10 xp</div></div></div>
+    </div>
+  </div>
+  <div class="chapter sun-study" id="s4">
+    <div class="ch-header" onclick="toggle('s4')"><span class="ch-icon">🔮</span><div class="ch-info"><div class="ch-name">Cap. V — El Estudio del Domingo</div><div class="ch-time">tarde · a tu ritmo</div></div><div class="ch-right"><span class="ch-xp-badge sunday-badge" id="badge-s4">0 / 40 xp</span><span class="ch-chev" id="chev-s4">▾</span></div></div>
+    <div class="tasks" id="tasks-s4">
+      <div class="task sunday-gem" data-id="s4-0" data-xp="15" data-ch="s4" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Primera sesión del grimorio</div><div class="task-xp">+15 xp · sesión I</div></div></div>
+      <div class="task sunday-gem" data-id="s4-1" data-xp="15" data-ch="s4" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Segunda sesión — el mundo puede esperar</div><div class="task-xp">+15 xp · sesión II</div></div></div>
+      <div class="task sunday-gem" data-id="s4-2" data-xp="10" data-ch="s4" onclick="check(this)"><div class="task-gem"></div><div class="task-body"><div class="task-text">Cerrar los libros con honor</div><div class="task-xp">+10 xp · finalizar y descansar</div></div></div>
+      <p class="ch-note">✦ Domingo también estudia — pero a su propio ritmo.</p>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <button class="reset-btn" onclick="resetAll()">— nuevo día —</button>
+  <div class="footer-quote" id="footer-quote">"Carpe diem, señorita Mónica."</div>
+</div>
+</div>
+
+<script>
+// ── Service Worker ──────────────────
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+
+// ── Config ──────────────────────────
+const CFG={
+  weekday:{chapters:['c0','c1','c2','c3','c4','c5'],max:{c0:45,c1:40,c2:15,c3:30,c4:50,c5:30},total:210,title:'El Libro de Misiones',sub:'Crónica Diaria · Mónica',fillClass:'weekday',quote:'"Carpe diem, señorita Mónica."'},
+  sunday:{chapters:['s0','s1','s2','s3','s4'],max:{s0:35,s1:60,s2:25,s3:30,s4:40},total:190,title:'El Domingo Sagrado',sub:'Día de Descanso y Cuidado · Mónica',fillClass:'sunday',quote:'"Hoy el tiempo es tuyo."'}
+};
+let currentMode='weekday';
+
+// ── Storage ──────────────────────────
+const KEYS={weekday:'misiones_weekday_v1',sunday:'misiones_sunday_v1'};
+
+function loadState(mode){
+  try{const r=localStorage.getItem(KEYS[mode]);return r?JSON.parse(r):{};}catch(e){return {};}
+}
+function saveState(){
+  const done={};
+  document.querySelectorAll('.task.done').forEach(t=>{if(t.dataset.id)done[t.dataset.id]=true;});
+  try{localStorage.setItem(KEYS[currentMode],JSON.stringify(done));}catch(e){}
+}
+function applyState(mode){
+  const done=loadState(mode);
+  // clear all tasks first for this mode
+  CFG[mode].chapters.forEach(ch=>{
+    document.querySelectorAll(`#tasks-${ch} .task`).forEach(t=>t.classList.remove('done'));
+  });
+  Object.keys(done).forEach(id=>{
+    const el=document.querySelector(`[data-id="${id}"]`);
+    if(el)el.classList.add('done');
+  });
+}
+
+// ── UI ───────────────────────────────
+function setMode(mode){
+  currentMode=mode;
+  document.getElementById('section-weekday').classList.toggle('hidden',mode!=='weekday');
+  document.getElementById('section-sunday').classList.toggle('hidden',mode!=='sunday');
+  document.getElementById('btn-weekday').classList.toggle('active',mode==='weekday');
+  document.getElementById('btn-sunday').classList.toggle('active',mode==='sunday');
+  const cfg=CFG[mode];
+  document.getElementById('main-title').textContent=cfg.title;
+  document.getElementById('main-sub').textContent=cfg.sub;
+  document.getElementById('footer-quote').textContent=cfg.quote;
+  document.getElementById('xp-fill').className='xp-fill '+cfg.fillClass;
+  applyState(mode);
+  updateAll();
+}
+
+function getEarned(ch){
+  return [...document.querySelectorAll(`#tasks-${ch} .task.done`)].reduce((s,t)=>s+parseInt(t.dataset.xp||0),0);
+}
+function updateAll(){
+  const cfg=CFG[currentMode];
+  let total=0;
+  cfg.chapters.forEach(ch=>{
+    const earned=getEarned(ch);
+    total+=earned;
+    const badge=document.getElementById('badge-'+ch);
+    if(!badge)return;
+    badge.textContent=earned+' / '+cfg.max[ch]+' xp';
+    badge.classList.toggle('earned',earned>=cfg.max[ch]);
+  });
+  document.getElementById('xp-display').textContent=total+' / '+cfg.total+' xp';
+  document.getElementById('xp-fill').style.width=Math.round(total/cfg.total*100)+'%';
+}
+
+function check(el){
+  el.classList.toggle('done');
+  updateAll();
+  saveState();
+}
+function toggle(id){
+  const tasks=document.getElementById('tasks-'+id);
+  const chev=document.getElementById('chev-'+id);
+  const header=document.querySelector(`#${id} .ch-header`);
+  const open=tasks.classList.contains('open');
+  tasks.classList.toggle('open',!open);
+  chev.classList.toggle('open',!open);
+  header.classList.toggle('open',!open);
+}
+function resetAll(){
+  if(!confirm('¿Empezar un nuevo día? Se borrarán las misiones completadas.'))return;
+  CFG[currentMode].chapters.forEach(ch=>{
+    document.querySelectorAll(`#tasks-${ch} .task`).forEach(t=>t.classList.remove('done'));
+  });
+  updateAll();
+  try{localStorage.removeItem(KEYS[currentMode]);}catch(e){}
+}
+
+// ── Init ─────────────────────────────
+applyState('weekday');
+applyState('sunday');
+updateAll();
+</script>
+</body>
+</html>
