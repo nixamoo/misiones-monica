@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Misiones Mónica">
+<meta name="theme-color" content="#fdf6ec">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>El Libro de Misiones</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body{background:transparent;}
+
+.page{
+  background: #fdf6ec;
+  color: #3a2e1e;
+  font-family: 'Lato', sans-serif;
+  padding: 1.5rem 1.2rem 2.5rem;
+  min-height: 100vh;
+  min-height: 100dvh;
+  position: relative;
+}
+
+/* Texture overlay */
+.page::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background: radial-gradient(ellipse at 15% 5%, rgba(160,120,60,0.07) 0%, transparent 45%),
+              radial-gradient(ellipse at 85% 95%, rgba(80,100,50,0.06) 0%, transparent 45%);
+  pointer-events:none;
+}
+
+/* HEADER */
+.header{text-align:center;margin-bottom:1.8rem;position:relative;}
+.header-title{
+  font-family:'Playfair Display',Georgia,serif;
+  font-size:22px;font-style:italic;font-weight:400;
+  color:#3a2e1e;letter-spacing:1px;margin-bottom:2px;
+}
+.header-sub{
+  font-size:10px;color:rgba(90,70,40,0.45);
+  letter-spacing:3px;text-transform:uppercase;
+  font-family:'Lato',sans-serif;font-weight:300;
+}
+.header-rule{border:none;border-top:0.5px solid rgba(90,70,40,0.2);margin:8px 0;}
+
+/* XP TOTAL BAR */
+.xp-wrap{
+  background:#fff8ee;
+  border:0.5px solid rgba(150,120,60,0.25);
+  border-radius:8px;
+  padding:10px 14px;
+  margin-bottom:1.4rem;
+}
+.xp-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+.xp-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(90,70,40,0.45);}
+.xp-count{
+  font-family:'Playfair Display',Georgia,serif;
+  font-style:italic;font-size:18px;color:#8a6a2e;
+}
+.xp-track{
+  height:6px;background:rgba(150,120,60,0.12);
+  border-radius:3px;overflow:hidden;
+}
+.xp-fill{
+  height:100%;
+  background:linear-gradient(to right,#a8c068,#c9a84c);
+  border-radius:3px;
+  transition:width 0.4s ease;
+  width:0%;
+}
+
+/* CHAPTER BLOCK */
+.chapter{
+  background:#fff8ee;
+  border:0.5px solid rgba(150,120,60,0.22);
+  border-radius:10px;
+  margin-bottom:0.9rem;
+  overflow:hidden;
+  transition: box-shadow 0.2s;
+}
+.chapter:hover{box-shadow:0 2px 12px rgba(150,120,60,0.1);}
+
+.ch-header{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 14px 9px;
+  cursor:pointer;user-select:none;
+  border-bottom:0.5px solid transparent;
+  transition:border-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.ch-header.open{border-color:rgba(150,120,60,0.15);}
+
+.ch-icon{font-size:18px;flex-shrink:0;}
+
+.ch-info{flex:1;min-width:0;}
+.ch-name{
+  font-family:'Playfair Display',Georgia,serif;
+  font-size:14px;font-style:italic;
+  color:#5a4020;margin-bottom:1px;
+}
+.ch-time{font-size:11px;color:rgba(90,70,40,0.4);letter-spacing:0.5px;}
+
+.ch-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.ch-xp-badge{
+  font-size:10px;font-weight:400;letter-spacing:1px;
+  background:rgba(150,200,80,0.12);
+  color:#5a8020;
+  border:0.5px solid rgba(120,180,60,0.3);
+  border-radius:10px;padding:2px 8px;
+  white-space:nowrap;
+}
+.ch-xp-badge.earned{
+  background:rgba(120,180,60,0.2);
+  color:#3a6010;
+  border-color:rgba(90,150,40,0.4);
+}
+.ch-chev{font-size:10px;color:rgba(90,70,40,0.3);transition:transform 0.2s;}
+.ch-chev.open{transform:rotate(180deg);}
+
+/* TASKS */
+.tasks{display:none;padding:8px 14px 12px;}
+.tasks.open{display:block;}
+
+.task{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:6px 0;
+  border-bottom:0.5px solid rgba(150,120,60,0.08);
+  cursor:pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.task:last-child{border-bottom:none;}
+
+.task-gem{
+  width:14px;height:14px;
+  border:1.5px solid rgba(150,120,60,0.35);
+  border-radius:3px;
+  flex-shrink:0;margin-top:2px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+  position:relative;
+}
+.task.done .task-gem{
+  background:rgba(140,190,70,0.25);
+  border-color:rgba(100,160,40,0.6);
+}
+.task.done .task-gem::after{
+  content:'✓';font-size:9px;color:#5a9020;
+}
+
+.task-body{flex:1;min-width:0;}
+.task-text{
+  font-size:13.5px;color:#4a3a20;
+  line-height:1.4;
+  transition:color 0.15s;
+}
+.task.done .task-text{
+  color:rgba(90,70,40,0.35);
+  text-decoration:line-through;
+  text-decoration-color:rgba(140,190,70,0.4);
+}
+
+.task-xp{
+  font-size:10px;
+  color:rgba(90,130,30,0.6);
+  margin-top:1px;
+}
+.task.done .task-xp{color:rgba(90,130,30,0.35);}
+
+/* color variants */
+.chapter.morning .ch-name{color:#7a4a18;}
+.chapter.morning{border-color:rgba(200,140,60,0.3);}
+.chapter.morning .ch-header.open{border-color:rgba(200,140,60,0.2);}
+
+.chapter.study .ch-name{color:#2e5020;}
+.chapter.study{border-color:rgba(100,160,60,0.25);}
+.chapter.study .ch-header.open{border-color:rgba(100,160,60,0.18);}
+.chapter.study .task-gem{border-color:rgba(100,160,60,0.4);}
+.chapter.study .task.done .task-gem{background:rgba(100,160,60,0.22);border-color:rgba(70,130,30,0.6);}
+.chapter.study .task.done .task-gem::after{color:#3a7010;}
+
+.chapter.free .ch-name{color:#3a4a6a;}
+.chapter.free{border-color:rgba(80,100,160,0.22);}
+.chapter.free .ch-header.open{border-color:rgba(80,100,160,0.16);}
+.chapter.free .task-gem{border-color:rgba(80,100,160,0.3);}
+.chapter.free .task.done .task-gem{background:rgba(80,100,180,0.15);border-color:rgba(60,80,160,0.5);}
+.chapter.free .task.done .task-gem::after{color:#3a50a0;}
+.chapter.free .task.done .task-xp{color:rgba(60,80,160,0.35);}
+.chapter.free .task-xp{color:rgba(60,80,160,0.55);}
+
+/* Chapter note */
+.ch-note{
+  font-size:12px;font-style:italic;
+  color:rgba(90,70,40,0.4);
+  padding:2px 0 4px 24px;
+  line-height:1.5;
+}
+
+/* FOOTER */
+.footer{
+  text-align:center;margin-top:1.8rem;
+}
+.reset-btn{
+  background:transparent;
+  border:0.5px solid rgba(90,70,40,0.2);
+  color:rgba(90,70,40,0.4);
+  font-family:'Lato',sans-serif;
+  font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  padding:8px 20px;border-radius:20px;
+  cursor:pointer;
+  transition:all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.reset-btn:hover{color:rgba(90,70,40,0.65);border-color:rgba(90,70,40,0.35);}
+
+.footer-quote{
+  font-family:'Playfair Display',Georgia,serif;
+  font-style:italic;font-size:12px;
+  color:rgba(90,70,40,0.3);
+  margin-top:14px;line-height:1.6;
+}
+
+/* Safe area for iPhone notch/home bar */
+.page{
+  padding-bottom: calc(2.5rem + env(safe-area-inset-bottom));
+  padding-left: calc(1.2rem + env(safe-area-inset-left));
+  padding-right: calc(1.2rem + env(safe-area-inset-right));
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+<div class="header">
+  <hr class="header-rule">
+  <div class="header-title">El Libro de Misiones</div>
+  <div class="header-sub">Crónica Diaria · Mónica</div>
+  <hr class="header-rule">
+</div>
+
+<div class="xp-wrap">
+  <div class="xp-top">
+    <span class="xp-label">✦ XP del Día</span>
+    <span class="xp-count" id="xp-display">0 / 210 xp</span>
+  </div>
+  <div class="xp-track"><div class="xp-fill" id="xp-fill"></div></div>
+</div>
+
+<!-- CAP I -->
+<div class="chapter morning" id="c0">
+  <div class="ch-header open" onclick="toggle('c0')">
+    <span class="ch-icon">🕯️</span>
+    <div class="ch-info">
+      <div class="ch-name">Cap. I — Misión Aurora</div>
+      <div class="ch-time">5:30 am · El amanecer</div>
+    </div>
+    <div class="ch-right">
+      <span class="ch-xp-badge" id="badge-c0">0 / 45 xp</span>
+      <span class="ch-chev open" id="chev-c0">▾</span>
+    </div>
+  </div>
+  <div class="tasks open" id="tasks-c0">
+    <div class="task" data-id="c0-0" data-xp="10" onclick="check(this,'c0')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">Levantarse antes que el mundo</div>
+        <div class="task-xp">+10 xp</div>
+      </div>
+    </div>
+    <div class="task" data-id="c0-1" data-xp="15" onclick="check(this,'c0')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">La poción perfecta</div>
+        <div class="task-xp">+15 xp · preparar matcha</div>
+      </div>
+    </div>
+    <div class="task" data-id="c0-2" data-xp="10" onclick="check(this,'c0')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">El desayuno del héroe</div>
+        <div class="task-xp">+10 xp · comer · tomar agua</div>
+      </div>
+    </div>
+    <div class="task" data-id="c0-3" data-xp="10" onclick="check(this,'c0')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">Preparar las provisiones</div>
+        <div class="task-xp">+10 xp · comida y agua para la academia</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CAP II -->
+<div class="chapter morning" id="c1">
+  <div class="ch-header" onclick="toggle('c1')">
+    <span class="ch-icon">🌿</span>
+    <div class="ch-info">
+      <div class="ch-name">Cap. II — El Gran Ritual</div>
+      <div class="ch-time">antes de las 7:10 am</div>
+    </div>
+    <div class="ch-right">
+      <span class="ch-xp-badge" id="badge-c1">0 / 40 xp</span>
+      <span class="ch-chev" id="chev-c1">▾</span>
+    </div>
+  </div>
+  <div class="tasks" id="tasks-c1">
+    <div class="task" data-id="c1-0" data-xp="10" onclick="check(this,'c1')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">Llenar los bidones sagrados</div>
+        <div class="task-xp">+10 xp · agua hervida + agua de academia</div>
+      </div>
+    </div>
+    <div class="task" data-id="c1-1" data-xp="10" onclick="check(this,'c1')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">El aseo del aventurero</div>
+        <div class="task-xp">+10 xp · dientes · cara</div>
+      </div>
+    </div>
+    <div class="task" data-id="c1-2" data-xp="10" onclick="check(this,'c1')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">Ponerse la armadura</div>
+        <div class="task-xp">+10 xp · cambiarse</div>
+      </div>
+    </div>
+    <div class="task" data-id="c1-3" data-xp="10" onclick="check(this,'c1')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">Alimentar al compañero Onyx</div>
+        <div class="task-xp">+10 xp · comida y agua · paseo</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CAP III -->
+<div class="chapter morning" id="c2">
+  <div class="ch-header" onclick="toggle('c2')">
+    <span class="ch-icon">🗺️</span>
+    <div class="ch-info">
+      <div class="ch-name">Cap. III — Partida</div>
+      <div class="ch-time">máx 7:10 am</div>
+    </div>
+    <div class="ch-right">
+      <span class="ch-xp-badge" id="badge-c2">0 / 15 xp</span>
+      <span class="ch-chev" id="chev-c2">▾</span>
+    </div>
+  </div>
+  <div class="tasks" id="tasks-c2">
+    <div class="task" data-id="c2-0" data-xp="5" onclick="check(this,'c2')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">Últimos preparativos y arreglarse</div>
+        <div class="task-xp">+5 xp</div>
+      </div>
+    </div>
+    <div class="task" data-id="c2-1" data-xp="10" onclick="check(this,'c2')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">Cruzar la puerta — el mundo espera</div>
+        <div class="task-xp">+10 xp · salir a tiempo</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CAP IV -->
+<div class="chapter study" id="c3">
+  <div class="ch-header" onclick="toggle('c3')">
+    <span class="ch-icon">📚</span>
+    <div class="ch-info">
+      <div class="ch-name">Cap. IV — La Gran Academia</div>
+      <div class="ch-time">8:00 am – 1:00 / 2:00 pm</div>
+    </div>
+    <div class="ch-right">
+      <span class="ch-xp-badge" id="badge-c3">0 / 30 xp</span>
+      <span class="ch-chev" id="chev-c3">▾</span>
+    </div>
+  </div>
+  <div class="tasks" id="tasks-c3">
+    <div class="task" data-id="c3-0" data-xp="20" onclick="check(this,'c3')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">Sobrevivir y aprender</div>
+        <div class="task-xp">+20 xp · clases · apuntes · agua</div>
+      </div>
+    </div>
+    <div class="task" data-id="c3-1" data-xp="10" onclick="check(this,'c3')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">Regresar al hogar</div>
+        <div class="task-xp">+10 xp · llegar bien</div>
+      </div>
+    </div>
+    <p class="ch-note">✦ Llegar tarde o temprano está bien — lo importante es volver.</p>
+  </div>
+</div>
+
+<!-- CAP V -->
+<div class="chapter study" id="c4">
+  <div class="ch-header" onclick="toggle('c4')">
+    <span class="ch-icon">🔮</span>
+    <div class="ch-info">
+      <div class="ch-name">Cap. V — El Estudio</div>
+      <div class="ch-time">3:30 – 8:30 / 9:30 pm</div>
+    </div>
+    <div class="ch-right">
+      <span class="ch-xp-badge" id="badge-c4">0 / 50 xp</span>
+      <span class="ch-chev" id="chev-c4">▾</span>
+    </div>
+  </div>
+  <div class="tasks" id="tasks-c4">
+    <div class="task" data-id="c4-0" data-xp="5" onclick="check(this,'c4')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">Recuperar fuerzas</div>
+        <div class="task-xp">+5 xp · descanso breve al llegar</div>
+      </div>
+    </div>
+    <div class="task" data-id="c4-1" data-xp="15" onclick="check(this,'c4')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">Primera ronda de hechizos</div>
+        <div class="task-xp">+15 xp · sesión I</div>
+      </div>
+    </div>
+    <div class="task" data-id="c4-2" data-xp="15" onclick="check(this,'c4')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">Segunda ronda — no rendirse</div>
+        <div class="task-xp">+15 xp · sesión II</div>
+      </div>
+    </div>
+    <div class="task" data-id="c4-3" data-xp="15" onclick="check(this,'c4')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">El golpe final del día</div>
+        <div class="task-xp">+15 xp · sesión III</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CAP VI -->
+<div class="chapter free" id="c5">
+  <div class="ch-header" onclick="toggle('c5')">
+    <span class="ch-icon">🌙</span>
+    <div class="ch-info">
+      <div class="ch-name">Cap. VI — El Descanso Ganado</div>
+      <div class="ch-time">8:30 – 10:00 pm</div>
+    </div>
+    <div class="ch-right">
+      <span class="ch-xp-badge" id="badge-c5">0 / 30 xp</span>
+      <span class="ch-chev" id="chev-c5">▾</span>
+    </div>
+  </div>
+  <div class="tasks" id="tasks-c5">
+    <div class="task" data-id="c5-0" data-xp="15" onclick="check(this,'c5')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">Tiempo sagrado — lo que quieras</div>
+        <div class="task-xp">+15 xp · peli · leer · cantar · journaling</div>
+      </div>
+    </div>
+    <div class="task" data-id="c5-1" data-xp="15" onclick="check(this,'c5')">
+      <div class="task-gem"></div>
+      <div class="task-body">
+        <div class="task-text">Cerrar el libro del día</div>
+        <div class="task-xp">+15 xp · dormir a las 10:00 pm</div>
+      </div>
+    </div>
+    <p class="ch-note">✦ Este tiempo es tuyo. Lo mereciste.</p>
+  </div>
+</div>
+
+<div class="footer">
+  <button class="reset-btn" onclick="resetAll()">— nuevo día —</button>
+  <p class="footer-quote">"Carpe diem, señorita Mónica."</p>
+</div>
+
+</div>
+
+<script>
+// ── Service Worker ──────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+
+// ── Estado ──────────────────────────────────────
+const XP_MAX = 210;
+const chapterXP = {c0:45,c1:40,c2:15,c3:30,c4:50,c5:30};
+const STORAGE_KEY = 'misiones_monica_v1';
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+
+function saveState(){
+  const done = {};
+  document.querySelectorAll('.task.done').forEach(t=>{
+    done[t.dataset.id] = true;
+  });
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(done)); }catch(e){}
+}
+
+function applyState(){
+  const done = loadState();
+  Object.keys(done).forEach(id=>{
+    const el = document.querySelector(`[data-id="${id}"]`);
+    if(el) el.classList.add('done');
+  });
+}
+
+// ── UI ──────────────────────────────────────────
+function getChapterEarned(cid){
+  return [...document.querySelectorAll(`#tasks-${cid} .task.done`)]
+    .reduce((s,t)=>s+parseInt(t.dataset.xp||0),0);
+}
+
+function getTotalXP(){
+  return Object.keys(chapterXP).reduce((s,cid)=>s+getChapterEarned(cid),0);
+}
+
+function updateUI(cid){
+  const earned = getChapterEarned(cid);
+  const max = chapterXP[cid];
+  const badge = document.getElementById('badge-'+cid);
+  badge.textContent = earned+' / '+max+' xp';
+  if(earned>=max) badge.classList.add('earned');
+  else badge.classList.remove('earned');
+
+  const total = getTotalXP();
+  document.getElementById('xp-display').textContent = total+' / '+XP_MAX+' xp';
+  document.getElementById('xp-fill').style.width = Math.round(total/XP_MAX*100)+'%';
+}
+
+function check(el,cid){
+  el.classList.toggle('done');
+  updateUI(cid);
+  saveState();
+}
+
+function toggle(cid){
+  const tasks = document.getElementById('tasks-'+cid);
+  const chev = document.getElementById('chev-'+cid);
+  const header = document.querySelector(`#${cid} .ch-header`);
+  const open = tasks.classList.contains('open');
+  tasks.classList.toggle('open',!open);
+  chev.classList.toggle('open',!open);
+  header.classList.toggle('open',!open);
+}
+
+function resetAll(){
+  if(!confirm('¿Empezar un nuevo día? Se borrarán las misiones completadas.')) return;
+  document.querySelectorAll('.task').forEach(t=>t.classList.remove('done'));
+  Object.keys(chapterXP).forEach(cid=>updateUI(cid));
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+}
+
+// ── Init ────────────────────────────────────────
+applyState();
+Object.keys(chapterXP).forEach(cid=>updateUI(cid));
+</script>
+</body>
+</html>
